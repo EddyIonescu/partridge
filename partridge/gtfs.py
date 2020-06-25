@@ -99,7 +99,22 @@ class Feed(object):
         with open(path, "rb") as f:
             encoding = detect_encoding(f)
 
-        df = pd.read_csv(path, dtype=np.unicode, encoding=encoding, index_col=False)
+        # Obtain number of columns to use when reading CSV as to process rows with
+        # extraneous columns that would otherwise throw an error.
+        # Only uses first N columns where N is the number of columns.
+        num_columns = len(
+            pd.read_csv(
+                path, dtype=np.unicode, encoding=encoding, index_col=False, nrows=1
+            ).columns
+        )
+
+        df = pd.read_csv(
+            path,
+            dtype=np.unicode,
+            encoding=encoding,
+            index_col=False,
+            usecols=[i for i in range(num_columns)],
+        )
 
         # Strip leading/trailing whitespace from column names
         df.rename(columns=lambda x: x.strip(), inplace=True)
